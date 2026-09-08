@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./logo.svg" alt="shell-is-all-you-need" width="900">
+</p>
+
 # shell-is-all-you-need
 
 A dependency-free Rust [Model Context Protocol](https://modelcontextprotocol.io/) server that turns fixed process invocations into small, explicit tools for AI clients.
@@ -14,6 +18,19 @@ Use it to give an assistant focused capabilities—reading selected files, searc
 - **Optional durable tasks.** Long-running tools can use MCP Tasks with persisted state, polling, cancellation, and recovery.
 
 ## Install
+
+### Homebrew
+
+```sh
+brew install shell-is-all-you-need/tap/shell-is-all-you-need
+```
+
+Or add the tap once and use the short name:
+
+```sh
+brew tap shell-is-all-you-need/tap
+brew install shell-is-all-you-need
+```
 
 ### Rust
 
