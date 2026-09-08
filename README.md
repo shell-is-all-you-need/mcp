@@ -8,6 +8,8 @@ A dependency-free Rust [Model Context Protocol](https://modelcontextprotocol.io/
 
 Use it to give an assistant focused capabilities—reading selected files, searching a workspace, running a formatter, or invoking an internal CLI—without writing a custom MCP server or giving every tool unrestricted shell access.
 
+**[Read the documentation](https://shell-is-all-you-need.github.io/)** · [Quick start](https://shell-is-all-you-need.github.io/guide/getting-started) · [Examples](https://shell-is-all-you-need.github.io/examples/) · [CLI reference](https://shell-is-all-you-need.github.io/reference/cli)
+
 ## Why use it?
 
 - **One binary, no runtime dependencies.** The MCP server is implemented with the Rust standard library.
