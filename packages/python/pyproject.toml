@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shell-is-all-you-need"
+version = "0.1.0"
+description = "Zero-dependency launcher for the shell-is-all-you-need MCP server"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+keywords = ["mcp", "cli", "shell", "ai"]
+classifiers = [
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+shell-is-all-you-need = "shell_is_all_you_need:main"
+
+[project.urls]
+Homepage = "https://shell-is-all-you-need.github.io/"
+Repository = "https://github.com/shell-is-all-you-need/mcp"
+Issues = "https://github.com/shell-is-all-you-need/mcp/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Format, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: 1.98.1
+          components: rustfmt,clippy
+      - name: Rust format
+        run: cargo fmt --all -- --check
+      - name: Rust lint
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+      - name: Rust tests
+        run: cargo test --all-targets --locked
+      - name: Build debug binary for exact examples
+        run: cargo build --locked
+      - name: Exact MCP examples
+        run: python3 tests/live_openrouter.py --examples
+      - name: Metadata contracts
+        run: python3 ci/check.py
+      - name: Python syntax
+        run: python3 -m compileall -q tests ci packages/python/src
+      - name: Node syntax
+        run: |
+          node --check packages/npm/bin/shell-is-all-you-need.mjs
+          node --check packages/npm/lib/runner.mjs
+      - name: Launcher smoke tests without network
+        env:
+          SHELL_IS_ALL_YOU_NEED_BINARY: /bin/echo
+        run: |
+          node packages/npm/bin/shell-is-all-you-need.mjs NPM_WRAPPER_OK | grep NPM_WRAPPER_OK
+          PYTHONPATH=packages/python/src python3 -m shell_is_all_you_need PYTHON_WRAPPER_OK | grep PYTHON_WRAPPER_OK
+      - name: Prepare publish metadata smoke
+        run: python3 ci/prepare_release.py "$GITHUB_REPOSITORY"
+      - name: Package dry runs
+        run: |
+          cargo package --locked
+          npm pack ./packages/npm --dry-run
+          python3 -m pip install --disable-pip-version-check build
+          python3 -m build packages/python --outdir /tmp/pypi-dist
+
+  native-build:
+    name: Build ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-15-intel
+          - macos-15
+          - windows-2025
+          - windows-11-arm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: 1.98.1
+      - run: cargo build --release --locked

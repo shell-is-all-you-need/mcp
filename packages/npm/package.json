@@ -1,0 +1,36 @@
+{
+  "name": "shell-is-all-you-need",
+  "version": "0.1.0",
+  "description": "Zero-dependency launcher for the shell-is-all-you-need MCP server",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "shell-is-all-you-need": "bin/shell-is-all-you-need.mjs"
+  },
+  "exports": {
+    "./runner": "./lib/runner.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shell-is-all-you-need/mcp.git",
+    "directory": "packages/npm"
+  },
+  "homepage": "https://shell-is-all-you-need.github.io/",
+  "bugs": {
+    "url": "https://github.com/shell-is-all-you-need/mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "cli",
+    "shell",
+    "ai"
+  ]
+}

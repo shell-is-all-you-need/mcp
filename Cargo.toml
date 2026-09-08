@@ -1,0 +1,28 @@
+[package]
+name = "shell-is-all-you-need"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98.1"
+description = "Dependency-free multi-tool MCP server for fixed process invocations"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/shell-is-all-you-need/mcp"
+homepage = "https://shell-is-all-you-need.github.io/"
+documentation = "https://docs.rs/shell-is-all-you-need"
+keywords = ["mcp", "stdio", "json-rpc", "ai-tools"]
+categories = ["command-line-utilities"]
+publish = ["crates-io"]
+include = [
+  "/src/**",
+  "/Cargo.toml",
+  "/Cargo.lock",
+  "/README.md",
+  "/LICENSE",
+  "/mcp.example.json",
+]
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+panic = "abort"
+strip = "symbols"

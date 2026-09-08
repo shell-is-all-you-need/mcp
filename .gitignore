@@ -1,0 +1,10 @@
+.env
+.mcp-tasks/
+target/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+
+*.egg-info/
+build/
