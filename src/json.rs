@@ -309,12 +309,12 @@ pub fn integer(value: &str) -> bool {
         Err(_) => return if negative_exponent { zero } else { true },
     };
 
-    let scale = exponent_value - fraction.len() as i128;
+    let scale = exponent_value.saturating_sub(fraction.len() as i128);
     if scale >= 0 {
         return true;
     }
 
-    let required_zeros = (-scale) as u128;
+    let required_zeros = scale.unsigned_abs();
     if required_zeros > digits.len() as u128 {
         return zero;
     }

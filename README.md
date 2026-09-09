@@ -142,7 +142,7 @@ Copy its entries into the MCP section used by your client. The examples assume a
 The collection is intended as a practical starting point:
 
 - File tools are restricted to the working directory and deny `.env`, `.git`, and `.mcp-tasks`.
-- `search_grep` excludes those sensitive locations.
+- `search_grep` excludes those sensitive locations and skips symlinks encountered during its search.
 - `web_fetch` accepts only HTTP and HTTPS URLs and uses Python `urllib`.
 - `web_search` uses Python `urllib` with DuckDuckGo Lite at `https://lite.duckduckgo.com/lite/?q={query}&kl=en-us&kp=0`; neither web tool depends on `curl` or `wget`.
 - `tasks_run` is an inline long-running mock for trying the MCP Tasks lifecycle.
@@ -176,6 +176,8 @@ shell-is-all-you-need \
 
 Input schemas use a deliberately small, closed, flat subset of JSON Schema 2020-12. Fields may be `string`, `number`, `integer`, or `boolean`. Every declared field must be required and used by the command templates, and undeclared properties are rejected.
 
+Omit `--input-schema` to infer required string fields from the command placeholders (or an empty schema for a command without placeholders).
+
 Use `{field}` in an argv item to substitute a validated input value. Double opening or closing braces when the command needs a literal brace.
 
 Run this for the complete option reference:
@@ -205,6 +207,8 @@ For path arguments:
 4. Give write tools narrower roots than read tools when possible.
 
 Allowed roots and denied paths are checked after path and symlink resolution, and denied paths take precedence. Configure process timeouts, output limits, concurrency limits, and invocation rate limits for commands that may be expensive or untrusted.
+
+Path checks validate arguments before execution; they do not sandbox the child process or prevent another process from changing paths after validation. Dangling symlinks are rejected. Commands that recursively read directories or interpret file paths inside input content must enforce their own boundaries.
 
 Only expose a raw shell tool such as `shell_run` when the AI client and workspace are trusted and the broader access is intentional.
 

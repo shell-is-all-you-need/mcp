@@ -4,4 +4,4 @@ version = 4
 
 [[package]]
 name = "shell-is-all-you-need"
-version = "0.1.0"
+version = "0.1.1"

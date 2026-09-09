@@ -47,6 +47,7 @@ jobs:
       - run: cargo build --locked
       - run: python3 tests/live_openrouter.py --examples
       - run: python3 ci/check.py
+      - run: node --test tests/npm.mjs
       - name: Prepare publish metadata smoke
         run: python3 ci/prepare_release.py "$GITHUB_REPOSITORY"
       - run: cargo package --locked

@@ -79,6 +79,14 @@ fn json_parser_is_strict() {
 }
 
 #[test]
+fn integer_validation_handles_extreme_negative_exponents() {
+    for fraction in ["0", "00"] {
+        assert!(!json::integer(&format!("1.{fraction}e-{}", i128::MAX)));
+        assert!(json::integer(&format!("0.{fraction}e-{}", i128::MAX)));
+    }
+}
+
+#[test]
 fn cli_task_options_parse() {
     let action = cli::parse_args(vec![
         "--tool".into(),
@@ -448,6 +456,62 @@ fn filesystem_policy_rejects_symlink_escape() {
 
     fs::remove_dir_all(root).unwrap();
     fs::remove_dir_all(outside).unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn filesystem_policy_resolves_links_before_parent_components() {
+    use std::os::unix::fs::symlink;
+
+    let base = temp_path("path-policy-parents");
+    let root = base.join("root");
+    let outside = base.join("outside");
+    fs::create_dir_all(root.join("safe/child")).unwrap();
+    fs::create_dir_all(outside.join("child")).unwrap();
+    fs::write(outside.join("secret.txt"), "secret").unwrap();
+    symlink(outside.join("child"), root.join("escape")).unwrap();
+    symlink("safe/child", root.join("inside")).unwrap();
+    let policy =
+        path_policy::PathPolicy::new(vec![root.to_string_lossy().into_owned()], vec![]).unwrap();
+
+    let escaped = root.join("escape/../secret.txt");
+    assert_eq!(fs::read_to_string(&escaped).unwrap(), "secret");
+    assert!(policy.check("path", &escaped.to_string_lossy()).is_err());
+    assert!(
+        policy
+            .check("path", &root.join("escape/../new.txt").to_string_lossy())
+            .is_err()
+    );
+    assert!(
+        policy
+            .check("path", &root.join("inside/../new.txt").to_string_lossy())
+            .is_ok()
+    );
+    fs::remove_dir_all(base).unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn filesystem_policy_rejects_dangling_symlinks() {
+    use std::os::unix::fs::symlink;
+
+    let base = temp_path("path-policy-dangling");
+    let root = base.join("root");
+    fs::create_dir_all(&root).unwrap();
+    symlink(base.join("new.txt"), root.join("link")).unwrap();
+    let policy =
+        path_policy::PathPolicy::new(vec![root.to_string_lossy().into_owned()], vec![]).unwrap();
+    assert!(
+        policy
+            .check("path", &root.join("link").to_string_lossy())
+            .is_err()
+    );
+    assert!(
+        policy
+            .check("path", &root.join("link/child.txt").to_string_lossy())
+            .is_err()
+    );
+    fs::remove_dir_all(base).unwrap();
 }
 
 #[test]

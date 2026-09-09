@@ -1,6 +1,6 @@
 [package]
 name = "shell-is-all-you-need"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.98.1"
 description = "Dependency-free multi-tool MCP server for fixed process invocations"

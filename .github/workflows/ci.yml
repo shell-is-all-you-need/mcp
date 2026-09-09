@@ -43,6 +43,8 @@ jobs:
         run: |
           node --check packages/npm/bin/shell-is-all-you-need.mjs
           node --check packages/npm/lib/runner.mjs
+      - name: Node launcher tests
+        run: node --test tests/npm.mjs
       - name: Launcher smoke tests without network
         env:
           SHELL_IS_ALL_YOU_NEED_BINARY: /bin/echo

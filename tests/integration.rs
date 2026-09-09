@@ -48,7 +48,7 @@ fn tools_list_and_call_match_output_schema() {
     assert!(call.contains("\"resultType\":\"complete\""));
     assert!(call.contains("\"structuredContent\":"));
     assert!(call.contains("\"exitCode\":0"));
-    assert!(call.contains("shell-is-all-you-need 0.1.0"));
+    assert!(call.contains("shell-is-all-you-need 0.1.1"));
     assert!(call.contains("\"isError\":false"));
 }
 

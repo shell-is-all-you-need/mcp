@@ -54,6 +54,7 @@ function download(url, redirects = 5) {
       url,
       { headers: { "User-Agent": `shell-is-all-you-need-npm/${VERSION}` } },
       (response) => {
+        response.on("error", reject);
         const status = response.statusCode ?? 0;
         if (status >= 300 && status < 400 && response.headers.location && redirects > 0) {
           response.resume();

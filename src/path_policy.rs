@@ -1,5 +1,6 @@
 use std::{
-    ffi::OsString,
+    fs,
+    io::ErrorKind,
     path::{Component, Path, PathBuf},
 };
 
@@ -10,7 +11,7 @@ pub(super) struct PathPolicy {
     cwd: PathBuf,
 }
 
-fn lexical_absolute(path: &Path, cwd: &Path) -> Result<PathBuf, String> {
+fn resolve(path: &Path, cwd: &Path) -> Result<PathBuf, String> {
     let source = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -30,37 +31,25 @@ fn lexical_absolute(path: &Path, cwd: &Path) -> Result<PathBuf, String> {
                     ));
                 }
             }
-            Component::Normal(value) => output.push(value),
+            Component::Normal(value) => {
+                output.push(value);
+                // Resolve each existing component before handling `..`. Using
+                // exists() would mistake dangling symlinks for new file paths.
+                match fs::symlink_metadata(&output) {
+                    Ok(_) => {
+                        output = fs::canonicalize(&output).map_err(|error| {
+                            format!("cannot resolve {}: {error}", path.display())
+                        })?;
+                    }
+                    Err(error) if error.kind() == ErrorKind::NotFound => {}
+                    Err(error) => {
+                        return Err(format!("cannot resolve {}: {error}", path.display()));
+                    }
+                }
+            }
         }
     }
     Ok(output)
-}
-
-fn resolve(path: &Path, cwd: &Path) -> Result<PathBuf, String> {
-    let absolute = lexical_absolute(path, cwd)?;
-    if absolute.exists() {
-        return std::fs::canonicalize(&absolute)
-            .map_err(|error| format!("cannot resolve {}: {error}", path.display()));
-    }
-
-    let mut ancestor = absolute.as_path();
-    let mut suffix = Vec::<OsString>::new();
-    while !ancestor.exists() {
-        let name = ancestor
-            .file_name()
-            .ok_or_else(|| format!("cannot resolve {}", path.display()))?;
-        suffix.push(name.to_os_string());
-        ancestor = ancestor
-            .parent()
-            .ok_or_else(|| format!("cannot resolve {}", path.display()))?;
-    }
-
-    let mut resolved = std::fs::canonicalize(ancestor)
-        .map_err(|error| format!("cannot resolve {}: {error}", ancestor.display()))?;
-    for part in suffix.iter().rev() {
-        resolved.push(part);
-    }
-    Ok(resolved)
 }
 
 fn contains(root: &Path, target: &Path) -> bool {

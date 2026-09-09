@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shell-is-all-you-need"
-version = "0.1.0"
+version = "0.1.1"
 description = "Zero-dependency launcher for the shell-is-all-you-need MCP server"
 readme = "README.md"
 requires-python = ">=3.9"

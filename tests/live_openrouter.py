@@ -1092,6 +1092,7 @@ def test_examples() -> None:
         (cwd / "src" / "live.rs").write_text("// TODO LIVE_GREP_OK\n", encoding="utf-8")
         (cwd / "src" / "unrelated.txt").write_text("not rust\n", encoding="utf-8")
         (cwd / ".env").write_text("EXCLUDED_SEARCH_MARKER\n", encoding="utf-8")
+        (cwd / "env-link").symlink_to(cwd / ".env")
         (cwd / ".git").mkdir()
         (cwd / ".git" / "hidden").write_text("EXCLUDED_SEARCH_MARKER\n", encoding="utf-8")
         (cwd / ".mcp-tasks").mkdir()
@@ -1346,6 +1347,9 @@ def test_examples() -> None:
                         excluded = structured(mcp.call("grep", {"pattern": "EXCLUDED_SEARCH_MARKER"}))
                         if excluded["exitCode"] == 0 or str(excluded["stdout"]).strip():
                             raise RuntimeError("search/grep surfaced a denied directory or .env")
+                        escaped = structured(mcp.call("grep", {"pattern": "OUTSIDE"}))
+                        if str(escaped["stdout"]).strip():
+                            raise RuntimeError("search/grep followed a symlink outside the workspace")
 
                     elif namespace == "shell":
                         result = structured(
