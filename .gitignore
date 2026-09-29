@@ -1,6 +1,7 @@
 .env
 .mcp-tasks/
 target/
+media-work/
 __pycache__/
 *.pyc
 node_modules/

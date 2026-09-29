@@ -6,7 +6,7 @@ from pathlib import Path
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-IGNORED_PARTS = {".git", "target", "node_modules", "dist", "build", "__pycache__"}
+IGNORED_PARTS = {".git", "target", "node_modules", "dist", "build", "__pycache__", "media-work"}
 
 
 def toml(path: str) -> dict[str, object]:
@@ -54,6 +54,8 @@ def main() -> None:
         python["project"]["version"],
     }
     assert versions == {version}, f"package versions differ: core={version}, others={versions}"
+    python_launcher = (ROOT / "packages/python/src/shell_is_all_you_need/__init__.py").read_text(encoding="utf-8")
+    assert f'__version__ = "{version}"' in python_launcher
     assert npm["engines"]["node"] == ">=24"
     assert list(python["project"]["scripts"]) == ["shell-is-all-you-need"]
     repository = "shell-is-all-you-need/mcp"
@@ -103,6 +105,25 @@ def main() -> None:
             )
             assert set(schema.get("required", [])) == declared
             assert schema.get("additionalProperties") is False
+
+    standalone = json_file("mcp.media.workflow.json")
+    assert list(standalone["servers"]) == ["media"]
+    media_args = standalone["servers"]["media"]["args"]
+    assert [media_args[index + 1] for index, value in enumerate(media_args[:-1]) if value == "--name"] == [
+        "fetch_funny", "generate_image", "edit_image", "compare_images"
+    ]
+    starts = [index for index, value in enumerate(media_args) if value == "--tool"]
+    for position, start in enumerate(starts):
+        end = starts[position + 1] if position + 1 < len(starts) else len(media_args)
+        block = media_args[start:end]
+        schema = json.loads(block[block.index("--input-schema") + 1])
+        command = block[block.index("--exec") + 1 :]
+        assert command[:2] == ["python3", "-c"], "standalone tools must have inline code"
+        assert "media_workflow.py" not in " ".join(command)
+        assert template_placeholders(command[2]) == [], "escape literal Python braces"
+        compile(command[2].replace("{{", "{").replace("}}", "}"), "<inline MCP tool>", "exec")
+        used = {name for template in command[3:] for name in template_placeholders(template)}
+        assert used == set(schema["properties"]) == set(schema["required"])
 
     web_args = config["servers"]["web"]["args"]
     web_text = "\n".join(web_args)

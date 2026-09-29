@@ -1,171 +1,25 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 1200 260"
-  width="1200"
-  height="260"
-  role="img"
-  aria-label="shell-is-all-you-need"
->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" role="img" aria-labelledby="title description">
+  <title id="title">shell-is-all-you-need</title>
+  <desc id="description">A terminal prompt beside the shell-is-all-you-need wordmark.</desc>
   <defs>
-    <linearGradient id="shellGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#7CFFB2">
-        <animate
-          attributeName="stop-color"
-          values="#7CFFB2;#63E6FF;#B48CFF;#7CFFB2"
-          dur="5s"
-          repeatCount="indefinite"
-        />
-      </stop>
-
-      <stop offset="50%" stop-color="#63E6FF">
-        <animate
-          attributeName="stop-color"
-          values="#63E6FF;#B48CFF;#7CFFB2;#63E6FF"
-          dur="5s"
-          repeatCount="indefinite"
-        />
-      </stop>
-
-      <stop offset="100%" stop-color="#B48CFF">
-        <animate
-          attributeName="stop-color"
-          values="#B48CFF;#7CFFB2;#63E6FF;#B48CFF"
-          dur="5s"
-          repeatCount="indefinite"
-        />
-      </stop>
-
-      <animateTransform
-        attributeName="gradientTransform"
-        type="translate"
-        values="-0.35 0;0.35 0;-0.35 0"
-        dur="6s"
-        repeatCount="indefinite"
-      />
+    <linearGradient id="panel" x2="1" y2="1">
+      <stop stop-color="#122a25"/>
+      <stop offset="1" stop-color="#0b1719"/>
     </linearGradient>
-
-    <filter id="glow" x="-30%" y="-80%" width="160%" height="260%">
-      <feGaussianBlur stdDeviation="5" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-
-    <filter id="softGlow" x="-30%" y="-80%" width="160%" height="260%">
-      <feGaussianBlur stdDeviation="10" />
-    </filter>
+    <linearGradient id="accent" x2="1" y2="0">
+      <stop stop-color="#7cffb2"/>
+      <stop offset="1" stop-color="#63e6ff"/>
+    </linearGradient>
   </defs>
-
-  <!-- background -->
-  <rect width="1200" height="260" rx="32" fill="#080B0D" />
-
-  <!-- terminal prompt -->
-  <g
-    font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-    font-weight="700"
-  >
-    <text
-      x="68"
-      y="151"
-      font-size="72"
-      fill="#7CFFB2"
-      filter="url(#glow)"
-    >
-      $
-      <animate
-        attributeName="opacity"
-        values="1;1;0.25;1"
-        keyTimes="0;0.55;0.7;1"
-        dur="1.4s"
-        repeatCount="indefinite"
-      />
-    </text>
-
-    <!-- blurred ambient copy -->
-    <text
-      x="135"
-      y="151"
-      font-size="66"
-      letter-spacing="-2"
-      fill="url(#shellGradient)"
-      opacity="0.24"
-      filter="url(#softGlow)"
-    >
-      shell-is-all-you-need
-    </text>
-
-    <!-- main logo text -->
-    <text
-      x="135"
-      y="151"
-      font-size="66"
-      letter-spacing="-2"
-      fill="url(#shellGradient)"
-      filter="url(#glow)"
-    >
-      shell-is-all-you-need
-
-      <animate
-        attributeName="opacity"
-        values="0;1;1"
-        keyTimes="0;0.12;1"
-        dur="1.6s"
-        fill="freeze"
-      />
-
-      <animateTransform
-        attributeName="transform"
-        type="translate"
-        values="0 3;0 0;0 0"
-        keyTimes="0;0.15;1"
-        dur="1.6s"
-        fill="freeze"
-      />
-    </text>
-
-    <!-- animated underline / command cursor -->
-    <rect
-      x="137"
-      y="176"
-      width="0"
-      height="4"
-      rx="2"
-      fill="url(#shellGradient)"
-      opacity="0.9"
-    >
-      <animate
-        attributeName="width"
-        values="0;800;800"
-        keyTimes="0;0.55;1"
-        dur="2.4s"
-        repeatCount="indefinite"
-      />
-
-      <animate
-        attributeName="opacity"
-        values="0.2;1;0.15"
-        dur="2.4s"
-        repeatCount="indefinite"
-      />
-    </rect>
-
-    <!-- blinking cursor -->
-    <rect
-      x="1007"
-      y="95"
-      width="7"
-      height="66"
-      rx="2"
-      fill="#DFFFF0"
-    >
-      <animate
-        attributeName="opacity"
-        values="1;1;0;0"
-        keyTimes="0;0.45;0.46;1"
-        dur="1s"
-        repeatCount="indefinite"
-      />
-    </rect>
-  </g>
+  <rect width="1200" height="260" rx="30" fill="#080f12"/>
+  <rect x="1" y="1" width="1198" height="258" rx="29" fill="none" stroke="#29433f" stroke-width="2"/>
+  <rect x="42" y="42" width="176" height="176" rx="30" fill="url(#panel)" stroke="#3a6b5a" stroke-width="2"/>
+  <circle cx="72" cy="72" r="4" fill="#7cffb2"/>
+  <circle cx="88" cy="72" r="4" fill="#63e6ff" opacity=".75"/>
+  <circle cx="104" cy="72" r="4" fill="#b48cff" opacity=".65"/>
+  <path d="m76 112 34 27-34 27" fill="none" stroke="#7cffb2" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M126 169h46" fill="none" stroke="#63e6ff" stroke-width="12" stroke-linecap="round"/>
+  <text x="254" y="139" fill="#f2fff8" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700" letter-spacing="-2.5">shell-is-all-you-need</text>
+  <path d="M257 161h874" stroke="url(#accent)" stroke-width="4" stroke-linecap="round"/>
+  <text x="257" y="197" fill="#a2c6bb" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="600" letter-spacing="3">FIXED COMMANDS  /  FOCUSED TOOLS</text>
 </svg>

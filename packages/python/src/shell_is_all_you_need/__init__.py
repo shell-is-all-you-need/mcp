@@ -10,7 +10,7 @@ import sys
 import tempfile
 from urllib.request import Request, urlopen
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 _REPOSITORY = os.environ.get(
     "SHELL_IS_ALL_YOU_NEED_GITHUB_REPOSITORY", "shell-is-all-you-need/mcp"
 )

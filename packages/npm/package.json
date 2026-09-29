@@ -1,6 +1,6 @@
 {
   "name": "shell-is-all-you-need",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Zero-dependency launcher for the shell-is-all-you-need MCP server",
   "license": "MIT",
   "type": "module",

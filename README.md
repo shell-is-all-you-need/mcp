@@ -10,6 +10,8 @@ Use it to give an assistant focused capabilities—reading selected files, searc
 
 **[Read the documentation](https://shell-is-all-you-need.github.io/)** · [Quick start](https://shell-is-all-you-need.github.io/guide/getting-started) · [Examples](https://shell-is-all-you-need.github.io/examples/) · [CLI reference](https://shell-is-all-you-need.github.io/reference/cli)
 
+The [live media workflow](https://shell-is-all-you-need.github.io/examples/media-workflow) demonstrates scoped MCP tools for Reddit downloads, image generation/editing, and visual comparison. Copy the standalone [`mcp.media.workflow.json`](mcp.media.workflow.json): its tool implementations are inline, with no repository-local scripts. The opt-in end-to-end test is `python3 tests/live_openrouter.py --media`.
+
 ## Why use it?
 
 - **One binary, no runtime dependencies.** The MCP server is implemented with the Rust standard library.

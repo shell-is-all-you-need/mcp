@@ -6,10 +6,12 @@ Usage:
   python3 tests/live_openrouter.py --examples
   python3 tests/live_openrouter.py --models
   python3 tests/live_openrouter.py --live-tools
+  python3 tests/live_openrouter.py --media
   python3 tests/live_openrouter.py --all
 
-The script loads .env from the repository root without overriding existing
-process environment variables. It never prints OPENAI_API_KEY.
+The script loads .env from the workspace root, then the repository root,
+without overriding existing process environment variables. It never prints
+OPENAI_API_KEY.
 
 Modes:
   --llm      single-model round trips using the .env OPENAI_MODEL
@@ -17,6 +19,7 @@ Modes:
   --models   multi-step scenario suite across every LIVE_MODELS model
   --live-tools real-model calls through all exact mcp.example.json tools
   --all      run --llm and --examples together
+  --media    run live Reddit, image edit, image comparison and image generation
 
 The multi-model suite runs each scenario against every model in LIVE_MODELS
 (comma separated) or, when unset, the DEFAULT_MODELS list below. It prints a
@@ -660,7 +663,7 @@ def scenario_error_recovery() -> None:
                 messages,
                 servers,
                 "shell",
-                f"Your previous tool call failed. Recover by calling shell with exactly this command value: printf '%s' 'RECOVERED_OK' > recovered.txt",
+                "Your previous tool call failed. Recover by calling shell with exactly this command value: printf '%s' 'RECOVERED_OK' > recovered.txt",
                 tools,
             )
             if structured(result)["exitCode"] != 0:
@@ -1617,6 +1620,74 @@ def test_live_example_tools() -> None:
             print("PASS live_tool_skills_get")
 
 
+def test_live_media_workflow() -> None:
+    """Use real model-selected MCP arguments and actual files, not mocked calls."""
+    require_env("OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL")
+    if not (ROOT.parent / "cookies.txt").is_file():
+        raise RuntimeError("place cookies.txt in the workspace root")
+    with tempfile.TemporaryDirectory(prefix="mcp-standalone-media-") as raw:
+        cwd = Path(raw)
+        shutil.copyfile(ROOT / "mcp.media.workflow.json", cwd / "mcp.media.workflow.json")
+        (cwd / "cookies.txt").symlink_to(ROOT.parent / "cookies.txt")
+        config = json.loads((cwd / "mcp.media.workflow.json").read_text())
+        test_media_server(config, cwd)
+
+
+def test_media_server(config: dict[str, object], cwd: Path) -> None:
+    """Only the copied workflow JSON and cookies exist: no helper script."""
+    import hashlib
+
+    with McpProcess(config["servers"]["media"]["args"], cwd) as mcp:
+        names = ("fetch_funny", "generate_image", "edit_image", "compare_images")
+        advertised = {item["name"]: item for item in mcp.tools()}
+        if set(advertised) != set(names):
+            raise RuntimeError(f"unexpected media tools: {list(advertised)}")
+        tools = [{"type": "function", "function": {
+            "name": name, "description": advertised[name]["description"],
+            "parameters": advertised[name]["inputSchema"]}} for name in names]
+        messages: list[dict[str, object]] = []
+
+        denied = mcp.call("edit_image", {"image": str(cwd / "cookies.txt"), "prompt": "read it"})
+        if not denied.get("isError"):
+            raise RuntimeError("filesystem policy allowed the private cookie path")
+        invalid = structured(mcp.call("fetch_funny", {"sort": "new", "posts": 0}))
+        if invalid["exitCode"] == 0:
+            raise RuntimeError("unbounded Reddit pagination was accepted")
+
+        def step(name: str, prompt: str) -> dict[str, object]:
+            result, _ = forced_step(messages, {name: mcp}, name, prompt, tools)
+            values = structured(result)
+            if values["exitCode"] != 0 or values["timedOut"] or values["stdoutTruncated"]:
+                raise RuntimeError(f"{name} failed: {str(values['stderr'])[:400]}")
+            arguments = json.loads(messages[-2]["tool_calls"][0]["function"]["arguments"])
+            print(f"PASS {name} model parameters: {json.dumps(arguments, ensure_ascii=False)[:180]}")
+            return json.loads(values["stdout"])
+
+        fetched = step("fetch_funny", "Download the first 5 new posts from the funny subreddit. Choose the tool parameters yourself.")
+        if fetched["sort"] != "new" or len(fetched["posts"]) != 5:
+            raise RuntimeError("the model did not retrieve five new Reddit posts")
+        before = next((p["image"] for p in fetched["posts"] if p["image"]), None)
+        if before is None or not Path(before).is_file():
+            raise RuntimeError("Reddit returned no downloaded post image")
+
+        modified = step("edit_image", f"Use the image at {before} from the Reddit result. Add a vivid purple border and a large yellow star in the upper-left corner. Keep the original scene recognizable.")
+        after = modified["edited"]
+        if modified["original"] != before or not Path(after).is_file():
+            raise RuntimeError("image tool did not edit the selected Reddit image")
+        if hashlib.sha256(Path(before).read_bytes()).digest() == hashlib.sha256(Path(after).read_bytes()).digest():
+            raise RuntimeError("edited image bytes are identical to the original")
+
+        comparison = step("compare_images", f"Compare original image {before} and edited image {after}. Describe the visible differences, especially any new border or star.")
+        description = comparison["description"]
+        if len(description) < 30 or not all(word in description.lower() for word in ("border", "star")):
+            raise RuntimeError(f"comparison model did not describe the differences: {description!r}")
+        print(f"PASS live media workflow: {description[:240]}")
+
+        created = step("generate_image", "Generate a new image of a serene mountain landscape at sunset with dramatic clouds.")
+        if created["original"] is not None or not Path(created["edited"]).is_file():
+            raise RuntimeError("image generation did not save a new image")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -1629,10 +1700,12 @@ def main() -> int:
         help="run real public web checks and real-model calls for all exact example tools",
     )
     group.add_argument("--all", action="store_true", help="run the --llm and --examples suites")
+    group.add_argument("--media", action="store_true", help="run live Reddit → Muse Image → DeepSeek MCP workflow")
     args = parser.parse_args()
 
+    load_dotenv(ROOT.parent / ".env")
     load_dotenv(ROOT / ".env")
-    selected_llm = args.llm or args.all or not (args.examples or args.models or args.live_tools)
+    selected_llm = args.llm or args.all or not (args.examples or args.models or args.live_tools or args.media)
     selected_examples = args.examples or args.all
     selected_models_mode = args.models
 
@@ -1647,6 +1720,8 @@ def main() -> int:
     if args.live_tools:
         test_public_web_examples()
         test_live_example_tools()
+    if args.media:
+        test_live_media_workflow()
     return 0
 
 
